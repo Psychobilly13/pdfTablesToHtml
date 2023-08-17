@@ -51,7 +51,7 @@ async def recognize_pdf_with_image(file: str):
 # API
 app = FastAPI()
 
-@app.post("/convert")
+@app.post("/")
 async def recognize_pdf(file: UploadFile = File(...)):
     try:
         # create file path
@@ -70,6 +70,44 @@ async def recognize_pdf(file: UploadFile = File(...)):
         if result == "":
             # tesseract logic
             result = await recognize_pdf_with_image(file_path)
+
+        return result
+    except HTTPException as e:
+        raise HTTPException(status_code=e.status_code, detail=e.detail)
+
+@app.post("/text")
+async def recognize_pdf(file: UploadFile = File(...)):
+    try:
+        # create file path
+        local_db = tempfile.gettempdir()
+        file_path = f"{local_db}/{file.filename}"
+
+        # save file
+        with open(file_path, "wb") as f:
+            f.write(file.file.read())
+
+        # logic for recognizing
+        result = await recognize_pdf_with_text(file_path)
+
+        result = await recognize_pdf_with_image(file_path)
+
+        return result
+    except HTTPException as e:
+        raise HTTPException(status_code=e.status_code, detail=e.detail)
+
+@app.post("/image")
+async def recognize_pdf(file: UploadFile = File(...)):
+    try:
+        # create file path
+        local_db = tempfile.gettempdir()
+        file_path = f"{local_db}/{file.filename}"
+
+        # save file
+        with open(file_path, "wb") as f:
+            f.write(file.file.read())
+
+        # logic for recognizing
+        result = await recognize_pdf_with_image(file_path)
 
         return result
     except HTTPException as e:
