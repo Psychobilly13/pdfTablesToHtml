@@ -1,4 +1,4 @@
-from fastapi import FastAPI, Form, File, UploadFile
+from fastapi import FastAPI, Form, File, UploadFile, HTTPException
 from fastapi.responses import FileResponse
 from pydantic import BaseModel
 import camelot
@@ -46,25 +46,29 @@ app = FastAPI()
 
 @app.post("/")
 async def recognize_pdf(file: UploadFile = File(...)):
-    # create file path
-    local_db = tempfile.gettempdir()
-    print(local_db)
-    file_path = f"{local_db}/{file.filename}"
+    try:
+        10 / 0;
+        # create file path
+        local_db = tempfile.gettempdir()
+        print(local_db)
+        file_path = f"{local_db}/{file.filename}"
 
-    # save file
-    with open(file_path, "wb") as f:
-        f.write(file.file.read())
+        # save file
+        with open(file_path, "wb") as f:
+            f.write(file.file.read())
 
-    # logic for recognizing
-    result = ""
-    # if this recognize will be ok we don't need use tesseract
-    result = await recognize_pdf_with_text(file_path)
+        # logic for recognizing
+        result = ""
+        # if this recognize will be ok we don't need use tesseract
+        result = await recognize_pdf_with_text(file_path)
 
-    if result == "":
-        # tesseract logic
-        result = await recognize_pdf_with_image(file_path)
+        if result == "":
+            # tesseract logic
+            result = await recognize_pdf_with_image(file_path)
 
-    return result
+        return result
+    except Exception as e:
+        raise HTTPException(status_code=500, detail="something wrong")
     
 
 
