@@ -1,0 +1,21 @@
+[tool.poetry]
+name = "pdfparser"
+version = "0.1.0"
+description = ""
+authors = ["Psychobilly13 <psuchomort18@gmail.com>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.11"
+camelot-py = "^0.11.0"
+python-multipart = "^0.0.6"
+fastapi = "^0.101.1"
+uvicorn = "^0.23.2"
+pydantic = "^2.1.1"
+img2table = { version = "^1.0.11", python = ">=3.11,<3.12" }
+python-dotenv = "^1.0.0"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
