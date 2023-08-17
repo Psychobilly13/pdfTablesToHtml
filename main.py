@@ -63,53 +63,54 @@ async def recognize_pdf(file: UploadFile = File(...)):
             f.write(file.file.read())
 
         # logic for recognizing
+        status = True
         result = ""
+        pdf_type = "text"
         # if this recognize will be ok we don't need use tesseract
         result = await recognize_pdf_with_text(file_path)
 
         if result == "":
             # tesseract logic
+            pdf_type = "image"
+            result = await recognize_pdf_with_image(file_path)
+        
+        if result == "":
+            pdf_type = "unknown"
+            status = False
+
+        return {"type": pdf_type, "status": status, "result": result}
+    except HTTPException as e:
+        raise HTTPException(status_code=e.status_code, detail=e.detail)
+
+@app.post("/{pdf_type}")
+async def recognize_pdf(pdf_type: str, file: UploadFile = File(...)):
+    try:
+        # create file path
+        local_db = tempfile.gettempdir()
+        file_path = f"{local_db}/{file.filename}"
+
+        # save file
+        with open(file_path, "wb") as f:
+            f.write(file.file.read())
+
+        if pdf_type == "text":
+            # logic for recognizing
+            status = True
+            result = await recognize_pdf_with_text(file_path)
+
+            if result == "":
+                status = False
+        
+        if pdf_type == "image":
+            # logic for recognizing
+            status = True
             result = await recognize_pdf_with_image(file_path)
 
-        return result
-    except HTTPException as e:
-        raise HTTPException(status_code=e.status_code, detail=e.detail)
+            if result == "":
+                status = False
 
-@app.post("/text")
-async def recognize_pdf(file: UploadFile = File(...)):
-    try:
-        # create file path
-        local_db = tempfile.gettempdir()
-        file_path = f"{local_db}/{file.filename}"
 
-        # save file
-        with open(file_path, "wb") as f:
-            f.write(file.file.read())
-
-        # logic for recognizing
-        result = await recognize_pdf_with_text(file_path)
-
-        result = await recognize_pdf_with_image(file_path)
-
-        return result
-    except HTTPException as e:
-        raise HTTPException(status_code=e.status_code, detail=e.detail)
-
-@app.post("/image")
-async def recognize_pdf(file: UploadFile = File(...)):
-    try:
-        # create file path
-        local_db = tempfile.gettempdir()
-        file_path = f"{local_db}/{file.filename}"
-
-        # save file
-        with open(file_path, "wb") as f:
-            f.write(file.file.read())
-
-        # logic for recognizing
-        result = await recognize_pdf_with_image(file_path)
-
-        return result
+        return {"type": pdf_type,"status": status, "result": result}
     except HTTPException as e:
         raise HTTPException(status_code=e.status_code, detail=e.detail)
 
