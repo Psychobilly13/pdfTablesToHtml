@@ -14,20 +14,22 @@ from dotenv import load_dotenv
 load_dotenv()
 
 # logic
-async def recognize_pdf_with_text(file: str):
+async def recognize_pdf_extractable_text(file: str):
     # read data from saving file
     try:
         tables = camelot.read_pdf(file, pages='all', line_scale=40)
         # create html string from pdf data
         html = ""
         for table in tables:
+            if table.parsing_report["accuracy"] < 60:
+                return ''
             html += table.df.to_html()
     
         return html
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"recognizing_with_text_failed:\n{e}")
+        raise HTTPException(status_code=500, detail=f"recognize_pdf_extractable_text_failed:\n{e}")
 
-async def recognize_pdf_with_image(file: str):
+async def recognize_pdf_recognizable(file: str):
     try:
         tesseract_ocr = TesseractOCR(n_threads=8, lang="rus")
         # confidence
@@ -45,7 +47,7 @@ async def recognize_pdf_with_image(file: str):
     
         return html
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"recognizing_with_image_failed:\n{e}")
+        raise HTTPException(status_code=500, detail=f"recognize_pdf_recognizable_failed:\n{e}")
 
 
 # API
@@ -65,14 +67,14 @@ async def recognize_pdf(file: UploadFile = File(...)):
         # logic for recognizing
         status = True
         result = ""
-        pdf_type = "text"
+        pdf_type = "extractableText"
         # if this recognize will be ok we don't need use tesseract
-        result = await recognize_pdf_with_text(file_path)
+        result = await recognize_pdf_extractable_text(file_path)
 
         if result == "":
             # tesseract logic
-            pdf_type = "image"
-            result = await recognize_pdf_with_image(file_path)
+            pdf_type = "recognizable"
+            result = await recognize_pdf_recognizable(file_path)
         
         if result == "":
             pdf_type = "unknown"
@@ -93,20 +95,21 @@ async def recognize_pdf(pdf_type: str, file: UploadFile = File(...)):
         with open(file_path, "wb") as f:
             f.write(file.file.read())
 
-        if pdf_type == "text":
+        if pdf_type == "extractableText":
             # logic for recognizing
             status = True
-            result = await recognize_pdf_with_text(file_path)
+            result = await recognize_pdf_extractable_text(file_path)
 
             if result == "":
                 status = False
         
-        if pdf_type == "image":
+        if pdf_type == "recognizable":
             # logic for recognizing
             status = True
-            result = await recognize_pdf_with_image(file_path)
+            result = await recognize_pdf_recognizable(file_path)
 
             if result == "":
+                pdf_type = "unknown"
                 status = False
 
 
