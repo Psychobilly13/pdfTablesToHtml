@@ -17,12 +17,13 @@ load_dotenv()
 async def recognize_pdf_extractable_text(file: str):
     # read data from saving file
     try:
-        tables = camelot.read_pdf(file, pages='all', line_scale=40)
+        tables = camelot.read_pdf(file, pages="all", line_scale=40)
         # create html string from pdf data
         html = ""
         for table in tables:
+            print(table.parsing_report)
             if table.parsing_report["accuracy"] < 60:
-                return ''
+                return ""
             html += table.df.to_html()
     
         return html
@@ -39,7 +40,7 @@ async def recognize_pdf_recognizable(file: str):
         extracted_tables = pdf.extract_tables(ocr=tesseract_ocr, implicit_rows=True, borderless_tables=True, min_confidence=min_recognizing_confidence)
 
         # create html string from images of pdf
-        html = ''
+        html = ""
         for page, tables in extracted_tables.items():
             for idx, table in enumerate(tables):
                 # create page and merge this with other pages
@@ -68,7 +69,7 @@ async def recognize_pdf(file: UploadFile = File(...)):
         status = True
         result = ""
         pdf_type = "extractableText"
-        # if this recognize will be ok we don't need use tesseract
+        # if this recognize will be ok we don"t need use tesseract
         result = await recognize_pdf_extractable_text(file_path)
 
         if result == "":
