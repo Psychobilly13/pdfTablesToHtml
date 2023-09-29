@@ -1,5 +1,5 @@
 [tool.poetry]
-name = "pdfparser"
+name = "pdfConverter"
 version = "0.1.0"
 description = ""
 authors = ["Psychobilly13 <psuchomort18@gmail.com>"]
@@ -15,6 +15,7 @@ pydantic = "^2.1.1"
 img2table = { version = "^1.0.11", python = ">=3.11,<3.12" }
 python-dotenv = "^1.0.0"
 ghostscript = "^0.7"
+pypdf2 = "3.0.1"
 
 
 [build-system]
